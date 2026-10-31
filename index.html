@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cluedo de Halloween</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#0b0710;--card:#1a1022;--tx:#eadff0;--mut:#9c88ab;--ac:#e11d2e;--bd:#4a1620;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:radial-gradient(ellipse at top,#2e0a14 0,#0b0710 65%) fixed;background-color:var(--bg);color:var(--tx);font:16px/1.5 Georgia,serif}
+body::before,body::after{content:"🕸️";position:fixed;top:calc(env(safe-area-inset-top,0px) + 2px);font-size:54px;opacity:.45;pointer-events:none;z-index:5}
+body::before{left:2px}body::after{right:2px;transform:scaleX(-1)}
+main{max-width:520px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:26px;margin:8px 0 2px;font-style:italic;letter-spacing:1px;color:#ff3b4d;text-shadow:0 0 12px #e11d2e,0 0 28px #7f1020;animation:fl 3.5s infinite}
+h2{font-size:19px;margin:22px 0 8px;color:var(--ac);text-shadow:0 0 8px #7f1020}
+.sub{color:var(--mut);margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:12px;padding:14px;margin:10px 0;box-shadow:0 0 14px rgba(225,29,46,.18)}
+.card b{color:var(--ac)}
+button,select,input{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;width:100%;box-sizing:border-box;margin:6px 0}
+button{background:var(--ac);color:#fff;border:0;font-weight:bold;cursor:pointer;box-shadow:0 0 12px rgba(225,29,46,.5)}
+button.g{background:var(--card);color:var(--tx);border:1px solid var(--bd);box-shadow:none}
+.lock{opacity:.6}.err{color:#ff6b78;font-size:14px}
+@keyframes fl{0%,18%,22%,60%,100%{opacity:1}20%{opacity:.35}62%{opacity:.6}64%{opacity:1}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+var P={
+lara:{c:"TEIA",n:"Lara",p:"A Estudante Fantasma",l:"Deves-lhe dinheiro das propinas.",s:"Voltaste ao grupo depois de meses sumida na universidade e ninguém sabe bem o que andaste a fazer. O Senhor Batatinhas do MC emprestou-te dinheiro e ainda não lho pagaste.",a:"Estavas no exterior com a Bruna, a pôr a conversa em dia.",k:["Estiveste no exterior com a Bruna a recuperar meses de conversa. Ela confirma-te.","A Bruna jurou que viu o Francisco a esconder algo pequeno no bolso.","Viste a Joana atravessar o quintal, sem dizer para onde ia. Estranho, pois ela é sempre a primeira a avisar."]},
+cids:{c:"MORCEGO",n:"Cids",p:"A Condessa Matriarca",l:"Era o teu cliente mais chato do balcão.",s:"Como encarregada de balcão na universidade do Santiago, vês tudo o que se passa. Cansada de esperar por um pedido que nunca chega, pediste ao Senhor Batatinhas do MC para dar um empurrãozinho ao Santiago.",a:"Estavas na sala com o Santiago.",k:["Estiveste na sala com o Santiago, que fez de tudo para fugir ao tema casamento. Ele confirma-te.","Às 22h passaste pela casa de banho: luz apagada, porta aberta, ninguém.","O Santiago não saiu do teu lado durante a noite."]},
+bruna:{c:"CALDEIRAO",n:"Bruna",p:"A Herdeira de Boleia",l:"Era como um tio rico para ti.",s:"O Senhor Batatinhas do MC ia deixar a herança à pessoa que nunca paga a gasolina. Isto é, a ti, que entre a universidade e o Continente vives de boleia.",a:"Estavas no exterior com a Lara.",k:["Estiveste no exterior com a Lara. Ela confirma-te.","Sentiste cheiro a carvão no ar, vindo das traseiras.","Ouviste um som seco de madeira a bater, algures lá atrás."]},
+santiago:{c:"COVEIRO",n:"Santiago",p:"O Conde Fugitivo",l:"Ele sabia o teu maior medo.",s:"O Senhor Batatinhas do MC ia fazer um brinde “ao futuro casamento” à frente de todos. Entraste em pânico. Até a Cids, que trabalha na tua universidade, notou.",a:"Estavas na sala com a Cids.",k:["Estiveste na sala com a Cids, a desviar a conversa do casamento. Ela confirma-te.","Viste o Francisco a sair da cozinha com ar culpado, a esconder algo no bolso.","Pela janela viste uma figura no quintal com algo comprido na mão. Não distinguiste quem era."]},
+francisco:{c:"LOBO",n:"Francisco",p:"O Noivo Nervoso",l:"Ele descobriu o teu maior segredo.",s:"Escondes um anel no bolso há semanas. O Senhor Batatinhas do MC descobriu e ia contar à Joana, estragando a surpresa. Escondeste a caixinha numa palete da fábrica, mas hoje trouxeste-a no bolso.",a:"Estavas sozinho na cozinha à procura de gelo.",k:["Estiveste sozinho na cozinha. Ninguém te confirma, o que é um problema.","A caixinha no teu bolso era o anel. Nada a ver com o crime!","A Joana disse que ia à casa de banho, mas ao voltar trazia cinza nos sapatos."]},
+joana:{c:"ABOBORA",n:"Joana",p:"A Noiva Detetive",l:"Ele sabia que andavas a fingir.",s:"Desististe de Faro e voltaste para casa, e o Senhor Batatinhas nunca te deixou esquecer. Encontraste o anel escondido há semanas, mas finges que não sabes. Ele ameaçou contar tudo ao Francisco.",a:"Dizes que estavas na casa de banho.",k:["Ouviste um grito abafado vindo de longe, mas não sabes de onde.","Ouviste o Santiago e a Cids a discutir na sala. Nada de novo.","No teu telemóvel estão 47 pins de vestidos de noiva abertos. O Senhor Batatinhas viu-os!"]}
+};
+var R=[
+{t:"Entrada",code:"SANGUE",c:["A metralhadora era de brinquedo e estava sem pilhas.","Não há marcas de corda no pescoço do Senhor Batatinhas.","A cozinha está imaculada. Ninguém lá mexeu."]},
+{t:"Prato principal",code:"CORVO",c:["Ninguém ouviu tiros. A pistola nunca foi disparada.","A faca estava limpa na gaveta.","A casa de banho tem as toalhas secas e a despensa está intacta."]},
+{t:"Sobremesa",code:"VENENO",c:["A navalha só tinha espuma de barbear. Foi usada de manhã.","A sala está arrumada e a relva do exterior está intacta.","O Senhor Batatinhas foi encontrado com cinza na roupa e um enorme calombo na cabeça."]}
+];
+var SOL=atob("am9hbmF8YmFzdGFvfGNodXJyYXNxdWVpcmE=").split("|"),REV="REVELAR",HOST="MESTRE";
+var W=["Metralhadora","Faca","Pistola","Corda","Navalha","Bastão"],L=["Casa de banho","Cozinha","Sala","Churrasqueira","Exterior","Despensa"];
+var app=document.getElementById("app"),me=null,host=false;
+function sg(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function ss(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function nz(x){return String(x).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toUpperCase().replace(/[^A-Z0-9]/g,"")}
+function esc(x){return String(x).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c]})}
+function opts(a){return a.map(function(x){return"<option>"+x+"</option>"}).join("")}
+function render(){
+var h="";
+if(host){
+h="<h1>Guia do Anfitrião</h1><p class='sub'>Sem spoilers: nem tu sabes quem foi.</p><h2>Códigos pessoais</h2><div class='card'>"+Object.keys(P).map(function(k){return"<b>"+P[k].n+":</b> "+P[k].c}).join("<br>")+"</div>";
+h+="<h2>Códigos das rondas</h2><div class='card'>"+R.map(function(r,i){return"<b>Ronda "+(i+1)+" ("+r.t+"):</b> "+r.code}).join("<br>")+"<br><b>Solução final:</b> "+REV+"</div>";
+h+="<h2>Como conduzir a noite</h2><div class='card'>1. À chegada, dá a cada convidado o seu código pessoal e o link do site. Mugshot à entrada!<br>2. Antes de jantar, lê as regras e deixa cada um ler a sua ficha em silêncio.<br>3. Na entrada, diz o código da ronda 1. Lêem as pistas e começam as perguntas.<br>4. No prato principal, ronda 2.<br>5. Na sobremesa, ronda 3. Depois cada um faz a acusação no site e diz-a em voz alta.<br>6. Quando todos tiverem acusado, diz o código da solução. Todos o escrevem em simultâneo.</div>";
+h+="<h2>Regras para os convidados</h2><div class='card'>• Ficas na pele da tua personagem a noite toda.<br>• Podes mentir sobre ti para proteger o teu segredo.<br>• Nunca mintas sobre o que viste.<br>• Não mostres a tua ficha a ninguém.<br>• Uma acusação por pessoa: quem, com quê e onde.</div>";
+h+="<button class='g' onclick='out()'>Sair</button>";
+}else if(me){
+var p=P[me],un=parseInt(sg("r_"+me)||"0",10);
+h="<h1>"+esc(p.n)+"</h1><p class='sub'>"+esc(p.p)+"</p><div class='card'>O Senhor Batatinhas do MC, a batata frita mais rica e metediça do grupo, que nunca perde a oportunidade de se meter na vida de toda a gente, foi encontrado morto na noite de Halloween. Um de vós é o culpado. Descobre quem, com que arma e onde.</div>";
+h+="<h2>A tua ligação à vítima</h2><div class='card'>"+esc(p.l)+"</div><h2>O teu segredo</h2><div class='card'>"+esc(p.s)+"</div><h2>O teu álibi</h2><div class='card'>"+esc(p.a)+"</div>";
+R.forEach(function(r,i){
+h+="<h2>"+["🩸","🦇","☠️"][i]+" Ronda "+(i+1)+": "+r.t+"</h2>";
+if(i<un){h+="<div class='card'><b>Pistas da polícia</b><br>"+r.c.map(esc).join("<br><br>")+"</div><div class='card'><b>O que viste</b><br>"+esc(p.k[i])+"</div>"}
+else if(i===un){h+="<div class='card lock'>Bloqueada. O anfitrião diz o código quando chegar o prato.<input id='cd' placeholder='Código da ronda' autocapitalize='characters'><button onclick='unlock()'>Desbloquear</button><div class='err' id='er'></div></div>"}
+else{h+="<div class='card lock'>Bloqueada.</div>"}
+});
+h+="<h2>Acusação final</h2><div class='card'>Quem? <select id='as'>"+opts(Object.keys(P).map(function(k){return P[k].n}))+"</select>Com quê? <select id='aw'>"+opts(W)+"</select>Onde? <select id='al'>"+opts(L)+"</select><button onclick='acc()'>Fazer a acusação</button><div id='ar'></div></div>";
+h+="<h2>Solução</h2><div class='card'><input id='rv' placeholder='Código da solução' autocapitalize='characters'><button class='g' onclick='rev()'>Revelar o culpado</button><div id='rr'></div></div>";
+}else{
+h="<h1>Cluedo de Halloween</h1><p class='sub'>Escreve o código pessoal que recebeste à entrada.</p><div class='card'><input id='lg' placeholder='Código pessoal' autocapitalize='characters'><button onclick='login()'>Entrar</button><div class='err' id='le'></div></div>";
+}
+app.innerHTML=h;
+}
+function login(){
+var v=nz(document.getElementById("lg").value);
+if(v===HOST){host=true;render();return}
+var k=Object.keys(P).filter(function(x){return P[x].c===v})[0];
+if(k){me=k;ss("who",k);render()}else document.getElementById("le").textContent="Código inválido.";
+}
+function out(){host=false;me=null;ss("who","");render()}
+function unlock(){
+var un=parseInt(sg("r_"+me)||"0",10),v=nz(document.getElementById("cd").value);
+if(v===R[un].code){ss("r_"+me,String(un+1));render()}else document.getElementById("er").textContent="Código errado. Tenta outra vez!";
+}
+function acc(){
+var s=document.getElementById("as").value,w=document.getElementById("aw").value,l=document.getElementById("al").value;
+ss("acc_"+me,s+"|"+w+"|"+l);
+document.getElementById("ar").innerHTML="<p><b>Acusação registada:</b> "+s+", com "+w+", em "+l+". Diz ao anfitrião em voz alta!</p>";
+}
+function rev(){
+var v=nz(document.getElementById("rv").value),o=document.getElementById("rr");
+if(v!==REV){o.innerHTML="<p class='err'>Ainda não é altura de revelar.</p>";return}
+var a=(sg("acc_"+me)||"").split("|"),ok=a.length===3&&nz(a[0])===nz(SOL[0])&&nz(a[1])===nz(SOL[1])&&nz(a[2])===nz(SOL[2]);
+var nm=P[SOL[0]].n,w=W.filter(function(x){return nz(x)===nz(SOL[1])})[0],l=L.filter(function(x){return nz(x)===nz(SOL[2])})[0];
+o.innerHTML="<p><b>O culpado foi "+nm+"!</b><br>Arma: "+w+"<br>Local: "+l+"</p><p>"+(ok?"Acertaste em tudo. Detetive de elite!":"A tua acusação não bateu certo. Melhor sorte para o ano!")+"</p>";
+}
+var s0=sg("who");if(s0&&P[s0])me=s0;
+render();
+</script>
+</body>
+</html>
